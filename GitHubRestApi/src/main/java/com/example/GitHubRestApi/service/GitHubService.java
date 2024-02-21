@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -41,7 +42,7 @@ public class GitHubService {
             String url = apiUrl.concat("users/").concat(username).concat("/repos");
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<Object[]> objects = restTemplate.getForEntity(url, Object[].class);
-            //UNCOMMENT LINE BELOW IN CASE OF REACHING RATE LIMIT AND COMMENT TWO LINEs ABOVE
+            //UNCOMMENT LINE BELOW IN CASE OF REACHING RATE LIMIT AND COMMENT TWO LINES ABOVE
             //ResponseEntity<Object[]> objects = this.restTemplate.getForEntity(url, Object[].class);
             List<String> jsons = new ArrayList<>();
             writeToJson(objects.getBody(), jsons);
@@ -53,7 +54,17 @@ public class GitHubService {
                 }
             }
         }catch(HttpClientErrorException e){
-            UserNotFoundError err = new UserNotFoundError(HttpStatus.NOT_FOUND.value(), "User not found");
+            UserNotFoundError err = new UserNotFoundError();
+            if(e.getStatusCode().equals(HttpStatusCode.valueOf(404))){
+                err.setStatus(HttpStatus.NOT_FOUND.value());
+                err.setMessage("User not found");
+            }else if(e.getStatusCode().equals(HttpStatusCode.valueOf(403))){
+                err.setStatus(HttpStatus.FORBIDDEN.value());
+                err.setMessage("Rate limit reached");
+            }else{
+                err.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                err.setMessage("Something went wrong");
+            }
             return new ResponseEntity<Object>(err, new HttpHeaders(), err.getStatus());
         }
         return ResponseEntity.ok(repoResponseList);
