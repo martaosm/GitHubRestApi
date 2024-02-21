@@ -6,6 +6,7 @@ import com.example.GitHubRestApi.response.RepoResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -40,7 +41,7 @@ public class GitHubService {
             String url = apiUrl.concat("users/").concat(username).concat("/repos");
             RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<Object[]> objects = restTemplate.getForEntity(url, Object[].class);
-            //UNCOMMENT LINE BELOW IN CASE OF REACHING RATE LIMIT AND COMMENT TWO LINE ABOVE
+            //UNCOMMENT LINE BELOW IN CASE OF REACHING RATE LIMIT AND COMMENT TWO LINEs ABOVE
             //ResponseEntity<Object[]> objects = this.restTemplate.getForEntity(url, Object[].class);
             List<String> jsons = new ArrayList<>();
             writeToJson(objects.getBody(), jsons);
@@ -58,13 +59,14 @@ public class GitHubService {
         return ResponseEntity.ok(repoResponseList);
     }
 
+
     //gets all branches from a repository and converts them into JSONObjects for easy access to their attributes
     public List<Branch> getBranches(String username, String repoName){
         List<Branch> result = new ArrayList<>();
         String url = apiUrl.concat("repos/").concat(username).concat("/").concat(repoName).concat("/branches");
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Object[]> objects = restTemplate.getForEntity(url, Object[].class);
-        //UNCOMMENT LINE BELOW IN CASE OF REACHING RATE LIMIT AND COMMENT TWO LINE ABOVE
+        //UNCOMMENT LINE BELOW IN CASE OF REACHING RATE LIMIT AND COMMENT TWO LINES ABOVE
         //ResponseEntity<Object[]> objects = this.restTemplate.getForEntity(url, Object[].class);
         List<String> branchesObjects = new ArrayList<>();
         writeToJson(objects.getBody(), branchesObjects);
@@ -74,6 +76,7 @@ public class GitHubService {
         }
         return result;
     }
+
 
     //method writes provided objects into json string and adds converted object to the list of strings
     public static void writeToJson(Object[] objects, List<String> jsons) {
